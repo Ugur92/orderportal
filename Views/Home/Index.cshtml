@@ -1,0 +1,48 @@
+﻿
+
+@{
+    ViewBag.Title = "Index";
+}
+
+@await Component.InvokeAsync("Kampanya")
+
+
+@*@using (Html.BeginRouteForm("YeniSiparis", FormMethod.Post, new { @class = "form" }))
+{*@
+    @*<div id="sevkAdresModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sevk Adres Listesi</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Devam etmek için sevk adresi seçiniz.</p>
+                    <form>
+                        <div class="form-group">
+                            <label style="font-weight:bold">Sevk Adresi Seçiniz</label>
+                            <select id="sevkAdres" name="SevkAdres" class="form-control input-large"
+                                    asp-items="@ViewData["sevkAdresList"] as SelectList">
+                                <option disabled selected>Sevk Adresi Seçiniz</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" href="@Url.RouteUrl("YeniSiparis")" style="float:right">Onayla</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>*@
+@*}*@
+
+
+
+    @section scripts{
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#sevkAdresModal").modal({
+                    show: true,
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            });
+        </script>
+    }

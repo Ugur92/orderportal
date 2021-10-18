@@ -1,0 +1,121 @@
+﻿
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.css">
+
+@{
+    ViewBag.Title = "Anket";
+}
+
+<style>
+    /*  .col-md-12 {
+        padding-left: 0px;
+        padding-right: 0px;
+    }*/
+</style>
+
+<div class="portlet light portlet-fit bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="icon-note font-red"></i>
+            <span class="caption-subject font-red sbold">Bupiliç Bayi Sipariş Portalı &middot; Memnuniyet Anketi</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        @using (Html.BeginRouteForm("AnketEklePost", FormMethod.Post, new { @class = "form" }))
+        {
+            <div class="form">
+                <div class="form-row col-lg-12">
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">Yeni Bayi Web Portalımıza erişim hızı ne kadar iyi ?</label>
+                        <div id="Soru1" name="Soru1"></div>
+                    </div>
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">Yeni portalda sipariş oluşturmak ne derece kolay ?</label>
+                        <div id="Soru2" name="Soru2"></div>
+                    </div>
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">İstediğiniz bilgilere erişebiliyor musunuz ?</label>
+                        <div id="Soru3" name="Soru3"></div>
+                    </div>
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">Yeni portalın Mobil (Cep Telefonu) üzerinden erişimi ne derece kolay ?</label>
+                        <div id="Soru4" name="Soru4"></div>
+                    </div>
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">Mobil üzerinden sipariş vermek ne derece kolay ?</label>
+                        <div id="Soru5" name="Soru5"></div>
+                    </div>
+
+                    <div class="col-md-12 col-xl-12 col-sm-12">
+                        <label style="font-weight:bold">Yeni Bayi Web Portalımıza bir puan vermenizi istesek kaç puan verirdiniz ?</label>
+                        <div id="Soru6" name="Soru6"></div>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label style="font-weight:bold;padding-top:15px;">Görüşleriniz</label>
+                    <textarea row="5" id="Metin" name="Metin" placeholder="Görüşlerinizi bu alanda belirtebilirsiniz" class="form-control"></textarea>
+                    <button id="btnAnketKaydet" type="button" class="btn btn-success" style="float:right;margin-top:10px;">Anketi Yolla</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("#Soru1").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+            $("#Soru2").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+            $("#Soru3").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+            $("#Soru4").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+            $("#Soru5").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+            $("#Soru6").rateYo({ fullStar: true, multiColor: { "startColor": "#c0392b", "endColor": "#f1c40f" }});
+
+            $("#btnAnketKaydet").click(function (e) {
+                e.preventDefault();
+                $.blockUI({
+                    message: 'Lütfen Bekleyiniz',
+                    css: {
+                        border: 'none',
+                        padding: '15px',
+                        backgroundColor: '#000',
+                        '-webkit-border-radius': '10px',
+                        '-moz-border-radius': '10px',
+                        opacity: .5,
+                        color: '#fff'
+                    }
+                });
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.RouteUrl("AnketEklePost")',
+                    data: {
+                        Soru1: parseFloat($("#Soru1").rateYo("rating")),
+                        Soru2: parseFloat($("#Soru2").rateYo("rating")),
+                        Soru3: parseFloat($("#Soru3").rateYo("rating")),
+                        Soru4: parseFloat($("#Soru4").rateYo("rating")),
+                        Soru5: parseFloat($("#Soru5").rateYo("rating")),
+                        Soru6: parseFloat($("#Soru6").rateYo("rating")),
+                        Metin: $("#Metin").val()
+                    },
+                    success: function (response) {
+
+                        toastr.success("Ankete Katıldığınız İçin Teşekkürler", "Bupiliç Entegre A.Ş.")
+                        setInterval(function () {
+                            location.href=response.redirectUrl;
+                        }, 3000);
+                    }
+                });
+            });
+        });
+
+    </script>
+}

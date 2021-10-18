@@ -1,0 +1,125 @@
+﻿
+
+@{
+    ViewBag.Title = "CariEkstre";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+
+<div class="form" style="margin-bottom:30px;">
+    <div class="form-row">
+        <div class="col-md-4 col-xl-4 col-sm-4">
+            <input type="date" class="form-control" name="BaslangicTarih" id="BaslangicTarih" placeholder="Tarih Seçiniz" value="@DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd")">
+        </div>
+        <div class="col-md-4 col-xl-4 col-sm-4">
+            <input type="date" class="form-control" name="BitisTarih" id="BitisTarih" placeholder="Tarih Seçiniz" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+        </div>
+        <button type="submit" id="cariEkstreDoldur" onclick="cariListele()" class="btn btn-info"><i class="fa fa-search"></i></button>
+    </div>
+</div>
+
+<table id="cariEkstreListesi" class="table table-bordered table-striped" style="width:100%">
+    <tfoot>
+        <tr>
+            <th colspan="8" style="text-align:right;width:100%;"></th>
+        </tr>
+    </tfoot>
+</table>
+
+<style>
+    /*  tr {
+        white-space: nowrap;
+    }*/
+</style>
+
+@section scripts{
+
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        var cariTable;
+        $(document).ready(function () {
+            cariTable = $('#cariEkstreListesi').DataTable({
+                "rowId": "id",
+                "serverSide": true,
+                "processing": true,
+                "paging": true,
+                //"scrollY": "500px",
+                //"scrollCollapse": true,
+                "lengthChange": true,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Hepsi"]],
+                "ordering": false,
+                "responsive": {
+                    "details": {
+                        "type": 'column',
+                        "target": 'tr'
+                    }
+                },
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+
+                    //Toplama için tamsayı verileri almayı sağlar
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+                    //Tüm sayfalarda ki toplam
+                    total = api
+                        .column(7)
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+                    //Bulunan sayfada ki toplam
+                    pageTotal = api
+                        .column(7, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+                    //Footer güncelle
+                    $(api.column(7).footer()).html(
+                                                           /* pageTotal.toFixed(2) + '₺ ' +  +*/ total.toFixed(2) + '₺ Toplam'
+                    );
+                },
+                "ajax": {
+                    "url": "Home/GetCariEkstre",
+                    "type": "POST",
+                    "datatype": "json",
+                    "data": function (d) {
+                        d.baslangicTarihi = $('#BaslangicTarih').val();
+                        d.bitisTarihi = $('#BitisTarih').val();
+                    },
+                },
+                "columns": [
+                    { "data": "islemTarihi", "title": "İşlem Tarihi", "autoWidth": true },
+                    { "data": "belgeNo", "title": "Belge No", "autoWidth": true },
+                    { "data": "islemTuru", "title": "İşlem Türü", "autoWidth": true },
+                    { "data": "aciklama", "title": "Açıklama", "autoWidth": true },
+                    { "data": "islemTutari", "title": "İşlem Tutarı", "autoWidth": true },
+                    { "data": "borc", "title": "Borç", "autoWidth": true },
+                    { "data": "alacak", "title": "Alacak", "autoWidth": true },
+                    { "data": "bakiye", "title": "Bakiye", "autoWidth": true },
+                ],
+                "columnDefs": [{
+                    "targets": 0, "render": function (data) {
+                        return moment(data).format('DD-MM-YYYY');
+                    }
+                }],
+                "language": {
+                    "processing": "Yükleniyor... Lütfen Bekleyin",
+                    "url": "//cdn.datatables.net/plug-ins/1.10.12/i18n/Turkish.json",
+                }
+            });
+        });
+
+
+        function cariListele() {
+            cariTable.draw();
+        }
+    </script>
+}
+
