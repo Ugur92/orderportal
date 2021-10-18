@@ -1,0 +1,289 @@
+﻿@model IEnumerable<LedSiparisModulu.ViewModel.SepetVM>
+
+
+@{
+    ViewBag.Title = "Yeni Siparis";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+<style>
+    .col-md-3 {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    .hidden {
+        display: table-footer-group !important;
+        text-align: right !important;
+    }
+</style>
+
+<div class="portlet light portlet-fit bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="icon-basket font-red"></i>
+            <span class="caption-subject font-red sbold">Bupiliç Bayi Sipariş Portalı &middot; Yeni Sipariş</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+
+        <label style="font-weight:bold;font-size:xx-large;padding-top:25px;border-bottom:3px solid #000000">Ürün Listesi</label>
+        <table id="urunListesi" class="table table-striped table-bordered table-hover dataTable dtr-inline"></table>
+
+        <label style="font-weight:bold;font-size:xx-large;padding-top:25px;border-bottom:3px solid #000000">Sepetim</label>
+        <table id="urunSiparisListesi" class="table table-striped table-bordered table-hover dataTable dtr-inline">
+            <tfoot>
+                <tr>
+                    <th colspan="5"></th>
+                </tr>
+            </tfoot>
+        </table>
+
+        @using (Html.BeginForm("SiparisOnayla", "Home", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <div class="form" style="padding-top:25px !important;padding-bottom:25px !important;">
+                <div class="form-row">
+                    <div class="col-md-3 col-xl-3 col-sm-3">
+                        <label style="font-weight:bold;">Sipariş Tarihi</label>
+                        <input type="date" class="form-control" id="siparisTarih" name="SiparisTarihi" placeholder="Tarih Seçiniz" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-3 col-xl-3 col-sm-3">
+                        <label style="font-weight:bold;">Termin Tarihi</label>
+                        <input type="date" class="form-control" id="teminTarih" name="TeminTarih" placeholder="Tarih Seçiniz" value="@DateTime.Now.AddDays(+1).ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-3 col-xl-3 col-sm-3">
+                        <label style="font-weight:bold;">Teslim Tarihi</label>
+                        <input type="date" class="form-control" id="teslimTarih" name="TeslimTarih" placeholder="Tarih Seçiniz" value="@DateTime.Now.AddDays(+2).ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-3 col-xl-3 col-sm-3">
+                        <label style="font-weight:bold;">Sevk Adresi</label>
+                        <select id="sevkAdresDDL" name="SevkAdresId" class="form-control"
+                                asp-items="@ViewData["sevkAdresList"] as SelectList">
+                            <option disabled selected>Sevk Adres Seçiniz</option>
+                        </select>
+                    </div>
+                </div>
+                <br />
+                <div class="form-group">
+                    <label style="font-weight:bold;">Sipariş Notu</label>
+                    <textarea class="form-control" id="siparisNotu" name="SiparisNotu" rows="3" cols="100" placeholder="Sipariş ile ilgili notunuzu giriniz"></textarea>
+                    <button type="submit" class="btn btn-primary" style="float: right; margin-top: 5px;">Sipariş Ekle</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+
+@section scripts{
+
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        var eklenenSiparisler = []
+
+         @foreach (var item in Model)
+         {
+             @:eklenenSiparisler.push({ id: @item.StokId, stokkod: "@item.StokKod", stokisim: "@item.StokIsim", miktar: @item.Miktar });
+         }
+
+        var urunTable, siparisTable, isDetailOpen = false;
+
+        $(document).ready(function () {
+            urunTable = $('#urunListesi').DataTable({
+                "rowId": "id",
+                "serverSide": true,
+                "processing": true,
+                "paging": false,
+                "scrollY": "400px",
+                "scrollCollapse": true,
+                "ordering": false,
+                "lengthChange": false,
+                "responsive": {
+                    "details": {
+                        "type": 'column',
+                        "target": 'tr'
+                    }
+                },
+                "info": false,
+                "ajax": {
+                    "url": "/home/GetUrunListesi",
+                    "type": "POST",
+                    "datatype": "json",
+                },
+                "columns": [
+                    { "data": "id", "title": "Id", "autoWidth": true, "class": "hidden" },
+                    { "data": "stokisim", "title": "Stok İsim", "autoWidth": true },
+                    { "data": "stokkod", "title": "Stok Kodu", "autoWidth": true },
+                    { "data": "ambalajbirim", "title": "Birim", "autoWidth": true },
+                    { "data": "listeFiyat", "title": "Fiyat", "autoWidth": true },
+                    {
+                        "data": "id",
+                        "title": "Miktar",
+                        "render": function (data, type, row, meta) {
+                            return '<input type="text" id="' + row.id + '_miktar"  class="form-control '+row.id+'_miktar" />';
+                        },
+                    },
+                    {
+                        "data": "id",
+                        "render": function (data, type, row, meta) {
+                            return '<button class="btn btn-info" style="font-size:16px" onclick="siparisEkle(' + row.id + ')">Ekle</button>';
+                        },
+                    }
+                ],
+                "columnDefs": [{
+                    "targets": [0],
+                    "visible": false
+                }],
+                "language": {
+                    "processing": "Yükleniyor... Lütfen Bekleyin",
+                    "url": "//cdn.datatables.net/plug-ins/1.10.12/i18n/Turkish.json",
+                },
+            });
+
+            urunTable.on('responsive-display', function (e, datatable, row, showHide, update) {
+                isDetailOpen = showHide;
+            });
+
+            siparisTable = $("#urunSiparisListesi").DataTable({
+                "data": eklenenSiparisler,
+                "rowId": "id",
+                "lengthChange": false,
+                "searching": false,
+                "ordering": false,
+                "paging": true,
+                "info": false,
+                "responsive": true,
+                "autoWidth": false,
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+
+                    //Toplama için tamsayı verileri almayı sağlar
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+                    //Tüm sayfalarda ki toplam
+                    total = api
+                        .column(3)
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+                    //Bulunan sayfada ki toplam
+                    pageTotal = api
+                        .column(3, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+                    //Footer güncelle
+                    $(api.column(3).footer()).html(
+                                 'Toplam ' + total + ' Koli'
+                    );
+                },
+                "columns": [
+                    { "data": "id", "title": "Id", "width": "5%", "class": "hidden" },
+                    { "data": "stokkod", "title": "Stok Kodu", "autoWidth": true },
+                    { "data": "stokisim", "title": "Ürün İsmi", "autoWidth": true },
+                    { "data": "miktar", "title": "Miktar", "autoWidth": true },
+                    {
+                        "render": function (data, type, row, meta) {
+                            return '<button class="btn btn-danger" style="font-size:16px" onclick="siparisSil(' + row.id + ')">Sil</button>';
+                        }
+                    }
+                ],
+                "columnDefs": [{
+                    "targets": [0],
+                    "visible": false
+                }],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.12/i18n/Turkish.json"
+                }
+            });
+        });
+
+        function siparisEkle(urunId) {
+            var urunDetay = urunTable.row('#' + urunId).data();
+            var miktar;
+            if (isDetailOpen) {
+                miktar = parseInt($($("." + urunDetay.id + "_miktar")[1]).val());
+            }
+            else {
+                miktar = parseInt($("." + urunDetay.id + "_miktar").val());
+            }
+
+            if (Number.isNaN(miktar) || miktar <= 0) {
+                toastr.error("Miktar boş geçilemez","Bupiliç Entegre A.Ş.")
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SepeteEkle", "Home")',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    StokId: urunDetay.id,
+                    Birim: urunDetay.birim,
+                    Miktar: miktar
+                },
+                success: function (response) {
+
+                    if (response != "") {
+                        alert(response);
+                    }
+                    else
+                    {
+                        var bulunanSiparis = eklenenSiparisler.find(function (siparis, index) { return siparis.id == urunDetay.id; })
+                        if (bulunanSiparis != undefined) {
+                            //NOTE: Siparis zaten listede, miktari yukselt
+                            bulunanSiparis.miktar += miktar;
+                            siparisTable.clear();
+                            siparisTable.rows.add(eklenenSiparisler);
+                            siparisTable.draw();
+                        }
+                        else {
+                            //NOTE: Siparis Sepete ekleniyor
+                            eklenenSiparisler.push({ id: urunDetay.id, stokkod: urunDetay.stokkod, stokisim: urunDetay.stokisim, miktar: miktar });
+                            siparisTable.clear();
+                            siparisTable.rows.add(eklenenSiparisler);
+                            siparisTable.draw();
+                        }
+                    }
+                },
+                error: function (err) {
+                    toastr.error("Beklenmeyen bir hata oluştu, lütfen daha sonra tekrar deneyiniz", "Bupiliç Entegre A.Ş.");
+                }
+            });
+        }
+
+        function siparisSil(urunId) {
+
+            var urunDetay = siparisTable.row('#' + urunId);
+            var bulunanSiparis = eklenenSiparisler.find(function (siparis, index) { return siparis.id == urunDetay.data().id; })
+
+            $.ajax({
+                url: '@Url.Action("SepettenCikar", "Home")',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    sepettekiStokId: urunDetay.id,
+                },
+                success: function () {
+                    if (bulunanSiparis != undefined)
+                    {
+                        var siparisIndex = eklenenSiparisler.indexOf(bulunanSiparis);
+                        eklenenSiparisler.splice(siparisIndex, 1);
+                        urunDetay.remove();
+                        siparisTable.draw();
+                    }
+                }
+            });
+        }
+    </script>
+
+}

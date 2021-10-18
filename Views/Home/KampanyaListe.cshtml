@@ -1,0 +1,21 @@
+﻿@model IEnumerable<DataAccess.Models.Kampanyalar>
+
+
+<div class="portlet light portlet-fit bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="icon-notebook font-red"></i>
+            <span class="caption-subject font-red sbold">Bupiliç Bayi Sipariş Portalı &middot; Kampanyalar</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+            var item = Model.ElementAt(i);
+            <div class="jumbotron">
+                <h1 class="display-4">@item.Baslik</h1>
+                <p class="lead">@item.Metin</p>
+            </div>
+        }
+    </div>
+</div>

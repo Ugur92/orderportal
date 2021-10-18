@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "Kampanya Ekle";
+}
+
+
+@using (Html.BeginRouteForm("KampanyaEklePost", FormMethod.Post, new { @class = "form" }))
+{
+    <div class="form-group col-lg-6">
+        <label style="font-weight:bold">Ürün Seçiniz</label>
+        <select id="Id" name="Id" class="form-control"
+                asp-items="@ViewData["urunlerList"] as SelectList">
+            <option disabled selected>Ürün Seçiniz</option>
+        </select>
+    </div>
+    <div class="form-group col-lg-6">
+        <label style="font-weight:bold">Başlık</label>
+        <input type="text" id="Baslik" name="Baslik" placeholder="Başlık Giriniz" class="form-control" />
+    </div>
+    <div class="form-group col-lg-6">
+        <label style="font-weight:bold">Başlangıç Tarihi</label>
+        <input type="date" id="BaslangicTarihi" name="BaslangicTarihi" placeholder="Başlangıç Tarihi Seçiniz" class="form-control" />
+    </div>
+    <div class="form-group col-lg-6">
+        <label style="font-weight:bold">Bitiş Tarihi</label>
+        <input type="date" id="BitisTarihi" name="BitisTarihi" placeholder="Bitiş Tarihi Seçiniz" class="form-control" />
+    </div>
+    <div class="form-group col-lg-6">
+        <label style="font-weight:bold">Kampanya Detay</label>
+        <textarea row="5" id="Metin" name="Metin" placeholder="Kampanya Detay Giriniz" class="form-control"></textarea>
+    </div>
+    <div class="form-group col-lg-6">
+        <button type="submit" class="btn btn-success">EKLE</button>
+    </div>
+}
