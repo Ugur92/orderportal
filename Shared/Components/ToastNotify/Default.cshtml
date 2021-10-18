@@ -1,0 +1,24 @@
+﻿@model LedSiparisModulu.Infrastructures.Toastr
+
+@if (Model.ToastMessages.Count > 0)
+{
+    <script>
+        $(document).ready(function () {
+
+            @foreach (LedSiparisModulu.Infrastructures.ToastMessage message in Model.ToastMessages)
+            {
+                @: toastr.options.closeButton = '@Model.ShowCloseButton';
+                @: toastr.options.newestOnTop = '@Model.ShowNewestOnTop';
+
+                string toastTypeValue = message.ToastType.ToString("F").ToLower();
+                @: var optionsOverride = { /* Add message specific options here */ };
+                if (message.IsSticky)
+                {
+                    @:optionsOverride.timeOut = 0;
+                    @:optionsOverride.extendedTimeout = 0;
+                }
+                @:toastr['@toastTypeValue']('@message.Message', '@message.Title', optionsOverride);
+            }
+        });
+    </script>
+}
